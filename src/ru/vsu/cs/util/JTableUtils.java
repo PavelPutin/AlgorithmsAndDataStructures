@@ -80,7 +80,7 @@ public class JTableUtils {
         } catch (ParseException e) {
             throw new NumberFormatException(e.getMessage());
         }
-    };
+    }
 
 
     private static <T extends JComponent> T setFixedSize(T comp, int width, int height) {
@@ -145,7 +145,7 @@ public class JTableUtils {
 
             @Override
             public Component getListCellRendererComponent(JList list,
-                                                          Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 setText(String.format("[%d]", index));
                 return this;
             }
@@ -166,7 +166,7 @@ public class JTableUtils {
         JList rowHeader = new JList(lm);
         rowHeader.setFixedCellWidth(DEFAULT_ROW_HEADER_WIDTH);
         rowHeader.setFixedCellHeight(
-                table.getRowHeight()// + table.getRowMargin()// + table.getIntercellSpacing().height
+            table.getRowHeight()// + table.getRowMargin()// + table.getIntercellSpacing().height
         );
         rowHeader.setCellRenderer(new RowHeaderRenderer());
 
@@ -186,10 +186,10 @@ public class JTableUtils {
      * @param changeButtonsMargin отступ кнопок от таблицы (а также расстояние между кнопками)
      */
     public static void initJTableForArray(
-            JTable table, int defaultColWidth,
-            boolean showRowsIndexes, boolean showColsIndexes,
-            boolean changeRowsCountButtons, boolean changeColsCountButtons,
-            int changeButtonsSize, int changeButtonsMargin
+        JTable table, int defaultColWidth,
+        boolean showRowsIndexes, boolean showColsIndexes,
+        boolean changeRowsCountButtons, boolean changeColsCountButtons,
+        int changeButtonsSize, int changeButtonsMargin
     ) {
         table.setCellSelectionEnabled(true);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -385,14 +385,14 @@ public class JTableUtils {
      * @see #initJTableForArray(javax.swing.JTable, int, boolean, boolean, boolean, boolean, int, int)
      */
     public static void initJTableForArray(
-            JTable table, int defaultColWidth,
-            boolean showRowsIndexes, boolean showColsIndexes,
-            boolean changeRowsCountButtons, boolean changeColsCountButtons
+        JTable table, int defaultColWidth,
+        boolean showRowsIndexes, boolean showColsIndexes,
+        boolean changeRowsCountButtons, boolean changeColsCountButtons
     ) {
         initJTableForArray(
-                table, defaultColWidth,
-                showRowsIndexes, showColsIndexes, changeRowsCountButtons, changeColsCountButtons,
-                22, DEFAULT_GAP
+            table, defaultColWidth,
+            showRowsIndexes, showColsIndexes, changeRowsCountButtons, changeColsCountButtons,
+            22, DEFAULT_GAP
         );
     }
 
@@ -401,7 +401,7 @@ public class JTableUtils {
      * @param table компонент JTable
      * @param rowCount новое кол-во строк (меньше или равно 0 - не менять)
      * @param colCount новое кол-во столбцов (меньше или равно 0 - не менять)
-     * @param colCount высота строки (меньше или равно 0 - не менять)
+     * @param rowHeight высота строки (меньше или равно 0 - не менять)
      * @param columnWidth ширина столбца (меньше или равно 0 - не менять)
      */
     public static void resizeJTable(JTable table, int rowCount, int colCount, int rowHeight, int columnWidth) {
@@ -574,8 +574,8 @@ public class JTableUtils {
      * (основная реализация, используется в остальных readArrayFromJTable и readMatrixFromJTable)
      */
     public static <T> T[][] readMatrixFromJTable(
-            JTable table, Class<T> clazz, Function<String, ? extends T> converter,
-            boolean errorIfEmptyCell, T emptyCellValue
+        JTable table, Class<T> clazz, Function<String, ? extends T> converter,
+        boolean errorIfEmptyCell, T emptyCellValue
     ) throws JTableUtilsException {
         TableModel tableModel = table.getModel();
         int rowCount = tableModel.getRowCount(), colCount = tableModel.getColumnCount();
@@ -603,7 +603,7 @@ public class JTableUtils {
      * Чтение данных из JTable в двухмерный массив
      */
     public static <T> T[][] readMatrixFromJTable(
-            JTable table, Class<T> clazz, Function<String, ? extends T> converter, T emptyCellValue
+        JTable table, Class<T> clazz, Function<String, ? extends T> converter, T emptyCellValue
     ) {
         try {
             return readMatrixFromJTable(table, clazz, converter, false, emptyCellValue);
@@ -616,7 +616,7 @@ public class JTableUtils {
      * Чтение данных из JTable в двухмерный массив
      */
     public static <T> T[][] readMatrixFromJTable(
-            JTable table, Class<T> clazz, Function<String, ? extends T> converter
+        JTable table, Class<T> clazz, Function<String, ? extends T> converter
     ) throws JTableUtilsException {
         return readMatrixFromJTable(table, clazz, converter, true, null);
     }
@@ -625,8 +625,8 @@ public class JTableUtils {
      * Чтение данных из JTable в одномерный массив
      */
     public static <T> T[] readArrayFromJTable(
-            JTable table, Class<T> clazz, Function<String, ? extends T> converter,
-            boolean errorIfEmptyCell, T emptyCellValue
+        JTable table, Class<T> clazz, Function<String, ? extends T> converter,
+        boolean errorIfEmptyCell, T emptyCellValue
     ) throws JTableUtilsException {
         T[][] matrix = readMatrixFromJTable(table, clazz, converter, errorIfEmptyCell, emptyCellValue);
         return matrix[0];
@@ -636,7 +636,7 @@ public class JTableUtils {
      * Чтение данных из JTable в одномерный массив
      */
     public static <T> T[] readArrayFromJTable(
-            JTable table, Class<T> clazz, Function<String, ? extends T> converter, T emptyCellValue
+        JTable table, Class<T> clazz, Function<String, ? extends T> converter, T emptyCellValue
     ) {
         try {
             return readArrayFromJTable(table, clazz, converter, false, emptyCellValue);
@@ -649,7 +649,7 @@ public class JTableUtils {
      * Чтение данных из JTable в одномерный массив
      */
     public static <T> T[] readArrayFromJTable(
-            JTable table, Class<T> clazz, Function<String, ? extends T> converter
+        JTable table, Class<T> clazz, Function<String, ? extends T> converter
     ) throws JTableUtilsException {
         return readArrayFromJTable(table, clazz, converter, true, null);
     }

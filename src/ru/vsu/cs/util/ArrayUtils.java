@@ -264,7 +264,7 @@ public class ArrayUtils {
     /*
     // Вариант с ипользованием дженериков и функциональных интерфейсов (Java 8 и старше)
 
-    public static <T> T readFromConsole(String name, java.ru.vsu.cs.util.function.Function<String, T> converter) {
+    public static <T> T readFromConsole(String name, java.util.function.Function<String, T> converter) {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             try {
@@ -278,7 +278,7 @@ public class ArrayUtils {
         }
     }
 
-    private static <T> T readArrayFromConsole(String arrName, java.ru.vsu.cs.util.function.Function<String, T> strToArrConverter) {
+    private static <T> T readArrayFromConsole(String arrName, java.util.function.Function<String, T> strToArrConverter) {
         return readFromConsole(
             "массив" + ((arrName == null || arrName.length() == 0) ? "" : " " + arrName),
             strToArrConverter

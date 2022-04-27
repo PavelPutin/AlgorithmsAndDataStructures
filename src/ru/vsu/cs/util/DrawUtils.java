@@ -11,13 +11,13 @@ import java.awt.geom.Rectangle2D;
 public class DrawUtils {
     /**
      * Рисование строки в центре прямоугольника (x, y, width, height).
-     * @param gr - Экземпляр <code>Graphics</code> для рисования
-     * @param font - Шрифт для рисования
-     * @param s - Строка, которую надо нарисовать
-     * @param x - Координата x верхнего левого угла прямоугольника
-     * @param y - Координата y верхнего левого угла прямоугольника
-     * @param width - Ширина прямоугольника
-     * @param height - Высота прямоугольника
+     * @param gr Экземпляр <code>Graphics</code> для рисования
+     * @param font Шрифт для рисования
+     * @param s Строка, которую надо нарисовать
+     * @param x Координата x верхнего левого угла прямоугольника
+     * @param y Координата y верхнего левого угла прямоугольника
+     * @param width Ширина прямоугольника
+     * @param height Высота прямоугольника
      * @see java.awt.Graphics
      */
     public static void drawStringInCenter(Graphics gr, Font font, String s, int x, int y, int width, int height) {
