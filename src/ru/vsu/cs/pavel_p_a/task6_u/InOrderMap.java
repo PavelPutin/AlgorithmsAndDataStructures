@@ -88,62 +88,6 @@ public class InOrderMap<K extends Comparable<? super K>, V> implements BSTreeMap
         };
     }
 
-    @Override
-    public Collection<V> values() {
-        return new DefaultNotSupportedCollection<V>() {
-            Iterator<Map.Entry<K, V>> entryIterator = entrySet().iterator();
 
-            @Override
-            public int size() {
-                return InOrderMap.this.size();
-            }
 
-            @Override
-            public Iterator<V> iterator() {
-                return new Iterator<V>() {
-                    @Override
-                    public boolean hasNext() {
-                        return entryIterator.hasNext();
-                    }
-
-                    @Override
-                    public V next() {
-                        return entryIterator.next().getValue();
-                    }
-
-                };
-            }
-
-            // надо будет потом реализовать остальные методы
-        };
-    }
-    @Override
-    public Set<K> keySet() {
-        return new DefaultNotSupportedSet<K>() {
-            Iterator<Map.Entry<K, V>> entryIterator = entrySet().iterator();
-
-            @Override
-            public int size() {
-                return InOrderMap.this.size();
-            }
-
-            @Override
-            public Iterator<K> iterator() {
-                return new Iterator<K>() {
-                    @Override
-                    public boolean hasNext() {
-                        return entryIterator.hasNext();
-                    }
-
-                    @Override
-                    public K next() {
-                        return entryIterator.next().getKey();
-                    }
-
-                };
-            }
-
-            // надо будет потом реализовать остальные методы
-        };
-    }
 }
