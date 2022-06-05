@@ -31,12 +31,7 @@ public class Solution {
                         permutedAdjMatrix[elementNewRowIndex][elementNewColumnIndex] = adjMatrixB[r][c];
                     }
                 }
-                printMatrix(permutedAdjMatrix, "PermutedAdjMatrix");
-                System.out.println();
                 if (areAdjMatricesEqual(adjMatrixA, permutedAdjMatrix)) {
-                    System.out.println("EqualMatrices");
-                    printMatrix(adjMatrixA, "Matrix A");
-                    printMatrix(permutedAdjMatrix, "PermutedAdjMatrix");
                     return true;
                 }
             }
@@ -75,18 +70,5 @@ public class Solution {
             }
         }
         return true;
-    }
-
-
-    private static void printMatrix(boolean[][] m, String caption) {
-        System.out.println(caption);
-        for (int r = 0; r < m.length; r++) {
-            boolean first = true;
-            for (int c = 0; c < m[0].length; c++) {
-                System.out.printf("%s%b", first ? "" : " ", m[r][c]);
-                first = false;
-            }
-            System.out.println();
-        }
     }
 }
