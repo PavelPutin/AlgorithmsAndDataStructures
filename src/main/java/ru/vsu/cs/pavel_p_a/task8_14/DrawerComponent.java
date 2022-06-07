@@ -91,7 +91,7 @@ public class DrawerComponent extends JComponent {
                     double yCoordinate = e.getY();
                     Ellipse2DColored clicked = circleList.stream().filter(circle -> circle.contains(xCoordinate, yCoordinate))
                             .findFirst().orElse(null);
-                    if (clicked != null) {
+                    if (clicked != null && clicked.fillColor == Color.white) {
                         while (!clicked.edges.isEmpty()){
                             Edge edge = clicked.edges.get(0);
                             edge.fromVertex.edges.remove(edge);
@@ -100,9 +100,7 @@ public class DrawerComponent extends JComponent {
                         circleList.remove(clicked);
                     }
 
-                } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                    Ellipse2DColored clicked = circleList.stream().filter(circle -> circle.contains(e.getPoint())).findFirst().orElse(null);
-                    if (clicked != null) {
+                    if (clicked != null && clicked.fillColor == Color.red) {
                         Point edgePoint = new Point((int) clicked.x + 25, (int) clicked.y + 25);
                         newEdgePoints.put(clicked, edgePoint);
                         if (newEdgePoints.size() == 2) {
@@ -122,7 +120,6 @@ public class DrawerComponent extends JComponent {
                             newEdgePoints.clear();
                         }
                     }
-
                 }
 
                 repaint();
