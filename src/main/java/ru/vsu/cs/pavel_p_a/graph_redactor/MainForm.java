@@ -5,11 +5,13 @@ import java.awt.*;
 
 public class MainForm extends JFrame {
 
+    private JPanel panel1;
+
     public MainForm () {
         this.setTitle("Graph redactor");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         GraphRedactor graphRedactor = new GraphRedactor();
-        graphRedactor.setPreferredSize(new Dimension(500, 500));
+//        graphRedactor.setPreferredSize(new Dimension(500, 500));
         this.add(graphRedactor);
         this.pack();
     }
