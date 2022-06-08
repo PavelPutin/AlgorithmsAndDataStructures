@@ -1,18 +1,24 @@
 package ru.vsu.cs.pavel_p_a.graph_redactor;
 
 import org.apache.batik.ext.awt.geom.Polygon2D;
+import ru.vsu.cs.course1.graph.AdjListsDigraph;
+import ru.vsu.cs.course1.graph.AdjListsGraph;
+import ru.vsu.cs.course1.graph.Graph;
 import ru.vsu.cs.util.DrawUtils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.sql.SQLOutput;
 import java.util.*;
 import java.util.List;
 
 public class GraphRedactor extends JComponent {
+
     private enum VertexStatus {
         FROM, TO;
     }
@@ -31,6 +37,7 @@ public class GraphRedactor extends JComponent {
     private static final Color SELECTION_FILL_COLOR = Color.CYAN;
     private static final Color DEFAULT_STROKE_COLOR = Color.BLACK;
     private static final Color MARK_STROKE_COLOR = Color.RED;
+    private static final Color DEFAULT_ERROR_FOREGROUND = Color.RED;
 
     private static final Dimension DEFAULT_CANVAS_DIMENSION = new Dimension(600, 600);
 
@@ -41,13 +48,37 @@ public class GraphRedactor extends JComponent {
     boolean isShiftPressed = false;
 
     boolean isDigraph = false;
+    boolean isWeighted = false;
 
     JScrollPane canvasScrollPane;
     Canvas canvas;
+
     JScrollPane controlScrollPane;
     JPanel controlPanel;
+
+    JPanel graphTypesPanel;
     JLabel graphTypeLabel;
-    JCheckBox graphTypeCheckBox;
+    JCheckBox isDigraphCheckBox;
+    JCheckBox isWeightedGraphCheckBox;
+
+    JPanel addVertexPanel;
+    JLabel addVertexLabel;
+    JLabel vertexTitleLabel;
+    JLabel vertexTitleErrorLabel;
+    JTextField vertexTitleTextField;
+    JLabel vertexWeightLabel;
+    JTextField vertexWeightTextField;
+    JButton addVertexButton;
+
+    JPanel edgeDeletingPanel;
+    JLabel edgeDeletingLabel;
+    JLabel edgeDeletingInfoLabel;
+    JLabel fromVertexTitleLabel;
+    JTextField fromVertexTitleTextField;
+    JLabel toVertexTitleLabel;
+    JTextField toVertexTitleTextField;
+    JButton deleteEdgeButton;
+
     JPanel statusPanel;
     JLabel mousePositionOnCanvasLabel;
     JLabel isCanvasActiveLabel;
@@ -57,42 +88,193 @@ public class GraphRedactor extends JComponent {
     }
 
     private void initUIComponents() {
-        this.setLayout(new BorderLayout());
-        this.canvasScrollPane = new JScrollPane();
-        this.canvasScrollPane.setPreferredSize(DEFAULT_CANVAS_DIMENSION);
-        this.add(canvasScrollPane, BorderLayout.WEST);
+        setLayout(new BorderLayout());
+        canvasScrollPane = new JScrollPane();
+        canvasScrollPane.setPreferredSize(DEFAULT_CANVAS_DIMENSION);
+        add(canvasScrollPane, BorderLayout.WEST);
 
-        this.canvas = new Canvas();
-        this.canvas.setPreferredSize(DEFAULT_CANVAS_DIMENSION);
-        this.canvasScrollPane.setViewportView(this.canvas);
+        canvas = new Canvas();
+        canvas.setPreferredSize(DEFAULT_CANVAS_DIMENSION);
+        canvasScrollPane.setViewportView(canvas);
 
-        this.controlScrollPane = new JScrollPane();
-        this.add(this.controlScrollPane, BorderLayout.EAST);
+        controlScrollPane = new JScrollPane();
+        add(controlScrollPane, BorderLayout.EAST);
 
-        this.controlPanel = new JPanel();
-        this.controlPanel.setLayout(new BoxLayout(this.controlPanel, BoxLayout.PAGE_AXIS));
-        this.controlScrollPane.setViewportView(this.controlPanel);
+        controlPanel = new JPanel();
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
+        controlScrollPane.setViewportView(controlPanel);
 
-        this.graphTypeLabel = new JLabel("Тип графа:");
-        this.controlPanel.add(graphTypeLabel);
+        graphTypesPanel = new JPanel();
+        graphTypesPanel.setLayout(new BoxLayout(graphTypesPanel, BoxLayout.PAGE_AXIS));
+        controlPanel.add(graphTypesPanel);
 
-        this.graphTypeCheckBox = new JCheckBox("ориентированный");
-        this.graphTypeCheckBox.setSelected(false);
-        this.graphTypeCheckBox.addChangeListener(e -> {
-            this.isDigraph = ((JCheckBox) e.getSource()).isSelected();
-            this.canvas.repaint();
-        });
-        this.controlPanel.add(this.graphTypeCheckBox);
+        graphTypeLabel = new JLabel("Тип графа:");
+        graphTypesPanel.add(graphTypeLabel);
 
-        this.statusPanel = new JPanel();
-        this.statusPanel.setLayout(new BoxLayout(this.statusPanel, BoxLayout.X_AXIS));
-        this.add(this.statusPanel, BorderLayout.SOUTH);
+        isDigraphCheckBox = new JCheckBox("ориентированный");
+        isDigraphCheckBox.setSelected(false);
+        isDigraphCheckBox.addChangeListener(e -> switchDigraph(e));
+        graphTypesPanel.add(isDigraphCheckBox);
 
-        this.mousePositionOnCanvasLabel = new JLabel("X: -; Y: -;");
-        this.statusPanel.add(this.mousePositionOnCanvasLabel);
+        isWeightedGraphCheckBox = new JCheckBox("взвешенный");
+        //недоделано
+        isWeightedGraphCheckBox.setVisible(false);
+        isWeightedGraphCheckBox.setSelected(false);
+        isWeightedGraphCheckBox.addChangeListener(e -> switchGraphWeight(e));
+        graphTypesPanel.add(isWeightedGraphCheckBox);
 
-        this.isCanvasActiveLabel = new JLabel("-");
-        this.statusPanel.add(this.isCanvasActiveLabel);
+        addVertexPanel = new JPanel();
+        addVertexPanel.setLayout(new BoxLayout(addVertexPanel, BoxLayout.PAGE_AXIS));
+        controlPanel.add(addVertexPanel);
+
+        addVertexLabel = new JLabel("Создать новую вершину");
+        addVertexPanel.add(addVertexLabel);
+
+        vertexTitleLabel = new JLabel("Введите название вершины");
+        addVertexPanel.add(vertexTitleLabel);
+
+        vertexTitleErrorLabel = new JLabel("Вершина с таким именем уже существует");
+        vertexTitleErrorLabel.setForeground(DEFAULT_ERROR_FOREGROUND);
+        vertexTitleErrorLabel.setVisible(false);
+        addVertexPanel.add(vertexTitleErrorLabel);
+
+        vertexTitleTextField = new JTextField();
+        addVertexPanel.add(vertexTitleTextField);
+
+        vertexWeightLabel = new JLabel("Введите вес вершины");
+        vertexWeightLabel.setVisible(this.isWeighted);
+        addVertexPanel.add(vertexWeightLabel);
+
+        vertexWeightTextField = new JTextField();
+        vertexWeightTextField.setVisible(this.isWeighted);
+        addVertexPanel.add(vertexWeightTextField);
+
+        addVertexButton = new JButton("Создать вершину");
+        addVertexButton.addActionListener(e -> addVertexWithButton());
+        addVertexPanel.add(addVertexButton);
+
+        edgeDeletingPanel = new JPanel();
+        edgeDeletingPanel.setLayout(new BoxLayout(edgeDeletingPanel, BoxLayout.PAGE_AXIS));
+        controlPanel.add(edgeDeletingPanel);
+
+        edgeDeletingLabel = new JLabel("Удалить ребро");
+        edgeDeletingPanel.add(edgeDeletingLabel);
+
+        edgeDeletingInfoLabel = new JLabel("Порядок вершин неважен");
+        edgeDeletingInfoLabel.setVisible(this.isDigraph);
+        edgeDeletingPanel.add(edgeDeletingInfoLabel);
+
+        fromVertexTitleLabel = new JLabel("Название вершины исхода");
+        edgeDeletingPanel.add(fromVertexTitleLabel);
+
+        fromVertexTitleTextField = new JTextField();
+        edgeDeletingPanel.add(fromVertexTitleTextField);
+
+        toVertexTitleLabel = new JLabel("Название вершины захода");
+        edgeDeletingPanel.add(toVertexTitleLabel);
+
+        toVertexTitleTextField = new JTextField();
+        edgeDeletingPanel.add(toVertexTitleTextField);
+
+        deleteEdgeButton = new JButton("Удалить ребро");
+        deleteEdgeButton.addActionListener(e -> deleteEdgeWithButton());
+        edgeDeletingPanel.add(deleteEdgeButton);
+
+        statusPanel = new JPanel();
+        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+        add(statusPanel, BorderLayout.SOUTH);
+
+        mousePositionOnCanvasLabel = new JLabel("X: -; Y: -;");
+        statusPanel.add(mousePositionOnCanvasLabel);
+
+        isCanvasActiveLabel = new JLabel("-");
+        statusPanel.add(isCanvasActiveLabel);
+    }
+
+    private void deleteEdgeWithButton() {
+        String fromVertexTitle = fromVertexTitleTextField.getText();
+        Vertex fromVertex = getVertexWithTitle(fromVertexTitle);
+        if (fromVertex == null) {
+            return;
+        }
+
+        String toVertexTitle = toVertexTitleTextField.getText();
+        Vertex toVertex = getVertexWithTitle(toVertexTitle);
+        if (toVertex == null) {
+            return;
+        }
+
+        Edge deletingEdge;
+        if (isDigraph) {
+            deletingEdge = getOrientedEdgeBetween(fromVertex, toVertex);
+        } else {
+            deletingEdge = getEdgeBetween(fromVertex, toVertex);
+        }
+        if (deletingEdge == null) {
+            return;
+        }
+        boolean result = deleteEdge(deletingEdge);
+        if (result) {
+            fromVertexTitleTextField.setText("");
+            toVertexTitleTextField.setText("");
+        }
+    }
+
+    private Vertex getVertexWithTitle(String title) {
+        return vertices.stream()
+                .filter(v -> v.title.equals(title))
+                .findFirst().orElse(null);
+
+    }
+
+    private Edge getEdgeBetween(Vertex v1, Vertex v2) {
+        return v1.incidentEdges.stream()
+                .filter(edge -> edge.fromVertex.equals(v1) && edge.toVertex.equals(v2) ||
+                edge.fromVertex.equals(v2) && edge.toVertex.equals(v1))
+                .findFirst().orElse(null);
+    }
+
+    private boolean deleteEdge(Edge edge) {
+         boolean result = edge.fromVertex.incidentEdges.remove(edge) &&
+            edge.toVertex.incidentEdges.remove(edge);
+         repaint();
+         return result;
+    }
+
+    private Edge getOrientedEdgeBetween(Vertex fromV, Vertex toV) {
+        return fromV.incidentEdges.stream()
+                .filter(edge -> edge.fromVertex.equals(fromV) && edge.toVertex.equals(toV))
+                .findFirst().orElse(null);
+    }
+
+    private void switchDigraph(ChangeEvent e) {
+        isDigraph = ((JCheckBox) e.getSource()).isSelected();
+        canvas.repaint();
+    }
+
+    private void switchGraphWeight(ChangeEvent e) {
+        this.isWeighted = ((JCheckBox) e.getSource()).isSelected();
+        vertexWeightLabel.setVisible(this.isWeighted);
+        vertexWeightTextField.setVisible(this.isWeighted);
+        canvas.repaint();
+    }
+
+    private void addVertexWithButton() {
+        String title = vertexTitleTextField.getText();
+        Point newVertexCenter = new Point((int) VERTEX_RADIUS, (int) VERTEX_RADIUS);
+        String weight = vertexWeightTextField.getText();
+        Double weightValue = isWeighted ? Double.parseDouble(weight) : null;
+
+        Vertex newVertex = addVertex(title, newVertexCenter);
+        if (newVertex == null) {
+            vertexTitleErrorLabel.setVisible(true);
+        } else {
+            vertexTitleErrorLabel.setVisible(false);
+            newVertex.weight = weightValue;
+        }
+
+        vertexTitleTextField.setText("");
+        vertexWeightTextField.setText("");
     }
 
     private void rightClickOnVertex(MouseEvent e, Vertex clickedVertex) {
@@ -184,6 +366,9 @@ public class GraphRedactor extends JComponent {
     private void deleteVertices(List<Vertex> verticesForDeleting) {
         for (Vertex v : verticesForDeleting) {
             vertices.remove(v);
+            if (newEdgePoints.containsValue(v)) {
+                newEdgePoints.clear();
+            }
             v.delete();
         }
     }
@@ -198,9 +383,14 @@ public class GraphRedactor extends JComponent {
         selectedVertices.remove(vertex);
     }
 
-    private void addVertex(String title, Point centerPoint) {
+    private Vertex addVertex(String title, Point centerPoint) {
+        if (vertices.stream().anyMatch(vertex -> vertex.title.equals(title))) {
+            return null;
+        }
         Vertex vertex = new Vertex(title, centerPoint);
         vertices.add(vertex);
+        repaint();
+        return vertex;
     }
 
     private void updateMousePositionLabel(MouseEvent e) {
@@ -209,6 +399,30 @@ public class GraphRedactor extends JComponent {
 
     private void updateCanvasActiveLabel() {
         isCanvasActiveLabel.setText(getCanvasActiveStatusString());
+    }
+
+    public Graph getGraph() {
+        Graph graph;
+        if (isDigraph) {
+            graph = new AdjListsDigraph();
+        } else {
+            graph = new AdjListsGraph();
+        }
+
+        Map<Vertex, Integer> vertexToInt = new HashMap<>();
+        int vertexIndex = 0;
+        for (Vertex v : vertices) {
+            vertexToInt.put(v, vertexIndex++);
+        }
+        for (Vertex v : vertices) {
+            for (Edge e : v.incidentEdges) {
+                int from = vertexToInt.get(e.fromVertex);
+                int to = vertexToInt.get(e.toVertex);
+                System.out.printf("from: %d -> to: %d%n", from, to);
+                graph.addAdge(from, to);
+            }
+        }
+        return graph;
     }
 
     private class Canvas extends JComponent {
@@ -311,7 +525,7 @@ public class GraphRedactor extends JComponent {
         }
     }
 
-    private static class Vertex {
+    private class Vertex {
         static int totalQuantity = 0;
         boolean selected = false;
         int id;
@@ -358,7 +572,7 @@ public class GraphRedactor extends JComponent {
 
         private double getWidth(String title) {
             if (title.length() > 1) {
-                return 2 * Math.floor(Math.sqrt(VERTEX_RADIUS * VERTEX_RADIUS / (1 - VERTEX_ECCENTRICITY * VERTEX_ECCENTRICITY)));
+                return FONT_SIZE * (title.length() * SIZE_SCALE + 1);
             }
             return 2 * VERTEX_RADIUS;
         }
@@ -440,7 +654,21 @@ public class GraphRedactor extends JComponent {
 
         void moveTo(Point centerPoint) {
             this.x = centerPoint.getX();
+            double widthHalf = this.shape.getBounds().getWidth() / 2;
+            if (this.x < widthHalf) {
+                this.x = widthHalf;
+            } else if (this.x > canvas.getWidth() - widthHalf) {
+                this.x = canvas.getWidth() - widthHalf;
+            }
+
             this.y = centerPoint.getY();
+            double heightHalf = this.shape.getBounds().getHeight() / 2;
+            if (this.y < heightHalf) {
+                this.y = heightHalf;
+            } else if (this.y > canvas.getHeight() - heightHalf) {
+                this.y = canvas.getHeight() - heightHalf;
+            }
+
             this.shape = setShape();
             this.incidentEdges.forEach(Edge::updateLine);
         }
