@@ -313,7 +313,7 @@ public class GraphRedactor extends JComponent {
         if (!canvas.contains(e.getPoint())) {
             return;
         };
-        addVertex(vertices.size() + "", e.getPoint());
+        addVertex(e.getPoint());
     }
 
     private void leftClickOnEmptySpace(MouseEvent e) {
@@ -391,6 +391,10 @@ public class GraphRedactor extends JComponent {
         vertices.add(vertex);
         repaint();
         return vertex;
+    }
+
+    private Vertex addVertex(Point centerPoint) {
+        return addVertex(Vertex.totalQuantity + 1 + "", centerPoint);
     }
 
     private void updateMousePositionLabel(MouseEvent e) {
