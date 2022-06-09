@@ -39,7 +39,7 @@ public class GraphRedactor extends JComponent {
     private static final Color MARK_STROKE_COLOR = Color.RED;
     private static final Color DEFAULT_ERROR_FOREGROUND = Color.RED;
 
-    private static final Dimension DEFAULT_CANVAS_DIMENSION = new Dimension(600, 600);
+    private static final Dimension DEFAULT_CANVAS_DIMENSION = new Dimension(400, 600);
 
     List<Vertex> vertices = new ArrayList<>();
     List<Vertex> selectedVertices = new ArrayList<>();
@@ -418,8 +418,11 @@ public class GraphRedactor extends JComponent {
             for (Edge e : v.incidentEdges) {
                 int from = vertexToInt.get(e.fromVertex);
                 int to = vertexToInt.get(e.toVertex);
-                System.out.printf("from: %d -> to: %d%n", from, to);
                 graph.addAdge(from, to);
+            }
+            if (v.incidentEdges.isEmpty()) {
+                int vertexWithoutEdges = vertexToInt.get(v);
+                graph.addAdge(vertexWithoutEdges, vertexWithoutEdges);
             }
         }
         return graph;

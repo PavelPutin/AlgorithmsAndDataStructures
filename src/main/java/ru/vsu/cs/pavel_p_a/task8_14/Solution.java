@@ -58,6 +58,9 @@ public class Solution {
     }
 
     private static boolean areAdjMatricesEqual(boolean[][] adjMatrixA, boolean[][] adjMatrixB) {
+        if (adjMatrixA.length == adjMatrixB.length && adjMatrixA.length == 0) {
+            return true;
+        }
         if (adjMatrixA.length != adjMatrixB.length || adjMatrixA[0].length != adjMatrixB[0].length) {
             return false;
         }
