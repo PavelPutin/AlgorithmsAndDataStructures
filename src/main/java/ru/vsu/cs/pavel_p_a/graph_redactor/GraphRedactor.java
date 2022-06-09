@@ -4,15 +4,24 @@ import org.apache.batik.ext.awt.geom.Polygon2D;
 import ru.vsu.cs.course1.graph.AdjListsDigraph;
 import ru.vsu.cs.course1.graph.AdjListsGraph;
 import ru.vsu.cs.course1.graph.Graph;
+import ru.vsu.cs.util.ArrayUtils;
 import ru.vsu.cs.util.DrawUtils;
+import ru.vsu.cs.util.JTableUtils;
+import ru.vsu.cs.util.SwingUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.sql.SQLOutput;
 import java.util.*;
 import java.util.List;
@@ -50,6 +59,9 @@ public class GraphRedactor extends JComponent {
     boolean isDigraph = false;
     boolean isWeighted = false;
 
+    private JFileChooser fileChooserOpen;
+    private JFileChooser fileChooserSave;
+
     JScrollPane canvasScrollPane;
     Canvas canvas;
 
@@ -79,6 +91,10 @@ public class GraphRedactor extends JComponent {
     JTextField toVertexTitleTextField;
     JButton deleteEdgeButton;
 
+    JPanel ioWithFilePanel;
+    JButton saveToFileButton;
+    JButton readFromFileButton;
+
     JPanel statusPanel;
     JLabel mousePositionOnCanvasLabel;
     JLabel isCanvasActiveLabel;
@@ -88,6 +104,18 @@ public class GraphRedactor extends JComponent {
     }
 
     private void initUIComponents() {
+        fileChooserOpen = new JFileChooser();
+        fileChooserSave = new JFileChooser();
+        fileChooserOpen.setCurrentDirectory(new File("."));
+        fileChooserSave.setCurrentDirectory(new File("."));
+        FileFilter filter = new FileNameExtensionFilter("Text", "txt");
+        fileChooserOpen.addChoosableFileFilter(filter);
+        fileChooserSave.addChoosableFileFilter(filter);
+
+        fileChooserSave.setAcceptAllFileFilterUsed(false);
+        fileChooserSave.setDialogType(JFileChooser.SAVE_DIALOG);
+        fileChooserSave.setApproveButtonText("Save");
+
         setLayout(new BorderLayout());
         canvasScrollPane = new JScrollPane();
         canvasScrollPane.setPreferredSize(DEFAULT_CANVAS_DIMENSION);
@@ -180,6 +208,18 @@ public class GraphRedactor extends JComponent {
         deleteEdgeButton.addActionListener(e -> deleteEdgeWithButton());
         edgeDeletingPanel.add(deleteEdgeButton);
 
+        ioWithFilePanel = new JPanel();
+        ioWithFilePanel.setLayout(new BoxLayout(ioWithFilePanel, BoxLayout.PAGE_AXIS));
+        controlPanel.add(ioWithFilePanel);
+
+        saveToFileButton = new JButton("Сохранить граф в файл");
+        saveToFileButton.addActionListener(e -> saveToFile());
+        ioWithFilePanel.add(saveToFileButton);
+
+        readFromFileButton = new JButton("Прочитать граф из файла");
+        readFromFileButton.addActionListener(e -> readFromFile());
+        ioWithFilePanel.add(readFromFileButton);
+
         statusPanel = new JPanel();
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
         add(statusPanel, BorderLayout.SOUTH);
@@ -189,6 +229,48 @@ public class GraphRedactor extends JComponent {
 
         isCanvasActiveLabel = new JLabel("-");
         statusPanel.add(isCanvasActiveLabel);
+    }
+
+    private void readFromFile() {
+        try {
+            if (fileChooserOpen.showOpenDialog(controlPanel) == JFileChooser.APPROVE_OPTION) {
+                File inputFile = fileChooserOpen.getSelectedFile();
+                Scanner graphScanner = new Scanner(inputFile);
+                
+                repaint();
+            }
+        } catch (Exception exception) {
+            SwingUtils.showErrorMessageBox(exception);
+        }
+    }
+
+    private void saveToFile() {
+        try {
+            if (fileChooserSave.showSaveDialog(controlPanel) == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooserSave.getSelectedFile();
+                saveAsTxt(file);
+            }
+        } catch (Exception exception) {
+            SwingUtils.showErrorMessageBox(exception);
+        }
+    }
+
+    private void saveAsTxt(File file) throws FileNotFoundException {
+        StringBuilder graphText = new StringBuilder();
+        if (isDigraph) {
+            graphText.append("digraph\n");
+        } else {
+            graphText.append("graph\n");
+        }
+
+        vertices.forEach(v -> graphText.append(v.toString()).append("\n"));
+        for (Vertex v : vertices) {
+            v.incidentEdges.forEach(e -> graphText.append(e.toString()).append("\n"));
+        }
+
+        PrintStream out = new PrintStream(file);
+        out.println(graphText);
+        out.close();
     }
 
     private void deleteEdgeWithButton() {
@@ -687,6 +769,11 @@ public class GraphRedactor extends JComponent {
                 e.toVertex.incidentEdges.remove(e);
             }
         }
+
+        @Override
+        public String toString() {
+            return title + " " + x + " " + y;
+        }
     }
 
     private static class Edge {
@@ -770,6 +857,11 @@ public class GraphRedactor extends JComponent {
             }
 
             g2D.setColor(oldColor);
+        }
+
+        @Override
+        public String toString() {
+            return fromVertex.title + " -- " + toVertex.title;
         }
     }
 
